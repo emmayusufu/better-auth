@@ -1,5 +1,64 @@
 # better-auth
 
+## 1.6.12
+
+### Patch Changes
+
+- [#9603](https://github.com/better-auth/better-auth/pull/9603) [`9bd53e1`](https://github.com/better-auth/better-auth/commit/9bd53e191cda174c202a07b6d27af73300e6b175) Thanks [@bytaesu](https://github.com/bytaesu)! - `role.authorize` now treats empty action lists (`[]` or `{ actions: [] }`) as unauthorized, and evaluates each requested resource under the `OR` connector before returning the result.
+
+- [#9702](https://github.com/better-auth/better-auth/pull/9702) [`23dbe1a`](https://github.com/better-auth/better-auth/commit/23dbe1ad0eb79372a674bc0771990c6cc3272a92) Thanks [@bytaesu](https://github.com/bytaesu)! - Banned users signing in with an OAuth provider now redirect to the `errorCallbackURL` passed to `signIn.social`, with `?error=BANNED_USER&error_description=<message>` in the query string. Previously the redirect went to the auth server's default error page with `?error=banned`, which broke multi-domain deployments where the auth host and frontend host differ. The `oauth-proxy`, SSO OIDC, and SAML callbacks now also redirect hook rejections to the error URL (previously returned JSON 403), and `oauth-proxy` URL-encodes the `error` query value across all its redirects.
+
+- [#9596](https://github.com/better-auth/better-auth/pull/9596) [`7a12072`](https://github.com/better-auth/better-auth/commit/7a120724c5c3fdd9d60d59169b32d693e9497fec) Thanks [@bytaesu](https://github.com/bytaesu)! - Email OTP sign-in no longer fails with a missing-captcha-token error under the default captcha settings. If you intentionally want captcha on email OTP sign-in, add `/sign-in/email-otp` to `captcha({ endpoints })`.
+
+- [#9614](https://github.com/better-auth/better-auth/pull/9614) [`09a1d50`](https://github.com/better-auth/better-auth/commit/09a1d50a806f1599707ef4e7c47f8a4b8eb20f96) Thanks [@bytaesu](https://github.com/bytaesu)! - `changeEmail` no longer silently returns `{ status: true }` when the flow cannot complete: if `emailVerification.sendVerificationEmail` is missing for a verified user, the request now fails with a 400 error. `callbackURL` values are also URL-encoded, so callbacks that carry their own query string survive the round trip through verify-email links.
+
+- [#9617](https://github.com/better-auth/better-auth/pull/9617) [`a6f144a`](https://github.com/better-auth/better-auth/commit/a6f144ad0a8ef702969cf49c999ccd073eb1ffa6) Thanks [@bytaesu](https://github.com/bytaesu)! - `parseJSON` now decodes escape sequences such as `\n`, `\\`, and `\uXXXX` in quoted strings. Values such as organization metadata that round-trip through `JSON.stringify` and back no longer come out with raw escape characters in place of the original characters.
+
+- [#9624](https://github.com/better-auth/better-auth/pull/9624) [`f77060a`](https://github.com/better-auth/better-auth/commit/f77060af3a9d1f19f05a26ccf6e56d79bb9db69d) Thanks [@bytaesu](https://github.com/bytaesu)! - Expired magic-link tokens and OAuth authorization codes are now reliably rejected. Magic-link verify redirects to `?error=INVALID_TOKEN` for expired tokens (was `?error=EXPIRED_TOKEN`). The OIDC, MCP, and `@better-auth/oauth-provider` `/token` endpoints return `error_description: "invalid code"` for expired codes (was `"code expired"`). The OAuth `error` value stays `invalid_grant`.
+
+- [#9631](https://github.com/better-auth/better-auth/pull/9631) [`dcb2e6d`](https://github.com/better-auth/better-auth/commit/dcb2e6d29cf4c986ff8980dab50bcfcb8110a749) Thanks [@bytaesu](https://github.com/bytaesu)! - Cookie values containing characters outside the bare cookie-octet range (such as `;`, `"`, or `\`) are now percent-encoded into the `Cookie` header. They were previously dropped on re-serialization, which could break flows that store structured values in cookies.
+
+- [#9642](https://github.com/better-auth/better-auth/pull/9642) [`f5fcc9d`](https://github.com/better-auth/better-auth/commit/f5fcc9d37f2c46d3719a70c18857d9913ce172cf) Thanks [@ping-maxwell](https://github.com/ping-maxwell)! - fix(admin): export AdminClientOptions and OrganizationClientOptions
+
+- [#9691](https://github.com/better-auth/better-auth/pull/9691) [`9d91eb7`](https://github.com/better-auth/better-auth/commit/9d91eb77f5c10779b287f9c8de0495fcb75a425a) Thanks [@ping-maxwell](https://github.com/ping-maxwell)! - fix: getMigration field index order
+
+- [#9543](https://github.com/better-auth/better-auth/pull/9543) [`1b40dac`](https://github.com/better-auth/better-auth/commit/1b40dac22e0cfddbbb27136fe8067aba154ca91a) Thanks [@bytaesu](https://github.com/bytaesu)! - `Cookie` headers without a space after `;` separators are now tolerated. Signed-in users behind proxies that strip this space were previously treated as logged-out.
+
+- [#9667](https://github.com/better-auth/better-auth/pull/9667) [`5626e1b`](https://github.com/better-auth/better-auth/commit/5626e1b4375aef7735e4f1103035377cbfad755c) Thanks [@kgarg2468](https://github.com/kgarg2468)! - Forward cookie refresh headers emitted while resolving sessions through getSessionFromCtx.
+
+- [#9619](https://github.com/better-auth/better-auth/pull/9619) [`ad9ad82`](https://github.com/better-auth/better-auth/commit/ad9ad824965cb8385f6f2a921576f2cc58ac2b47) Thanks [@ping-maxwell](https://github.com/ping-maxwell)! - fix(email-verification): clone request before passing to sendVerificationEmail callback
+
+- [#9661](https://github.com/better-auth/better-auth/pull/9661) [`62dabf6`](https://github.com/better-auth/better-auth/commit/62dabf66780a3dc7270e419886a15c43f3c8d879) Thanks [@gustavovalverde](https://github.com/gustavovalverde)! - Harden URL normalization and Stripe customer search escaping. URL helpers now trim trailing slashes without a regular expression, and Stripe search query values escape backslashes before quotes.
+
+- [#9347](https://github.com/better-auth/better-auth/pull/9347) [`276d67f`](https://github.com/better-auth/better-auth/commit/276d67fad597ca415a023c10fb5e1165093eebd1) Thanks [@ping-maxwell](https://github.com/ping-maxwell)! - fix: build synthetic user safely without including extra fields
+
+- [#9644](https://github.com/better-auth/better-auth/pull/9644) [`2d73fff`](https://github.com/better-auth/better-auth/commit/2d73ffff4470664147e7207336442029c35f12d9) Thanks [@ping-maxwell](https://github.com/ping-maxwell)! - fix(core): respect dynamic baseURL protocol option in getTrustedOrigins
+
+- [#9723](https://github.com/better-auth/better-auth/pull/9723) [`015f96b`](https://github.com/better-auth/better-auth/commit/015f96bc63a90c06a67fbaf80e286b6f6fe1967d) Thanks [@bytaesu](https://github.com/bytaesu)! - The `oauth-proxy` callback now forwards `result.error` from `handleOAuthUserInfo` as the `?error=` query value (e.g. `?error=signup_disabled`) instead of collapsing every error into a generic `?error=user_creation_failed`. Matches the behavior of the core OAuth callback and generic-oauth. The `user_creation_failed` value is still used as a fallback when `result.data` is missing without an explicit error.
+
+- [#9721](https://github.com/better-auth/better-auth/pull/9721) [`43cc49c`](https://github.com/better-auth/better-auth/commit/43cc49c640c0d2c27572807a291d318bbcadfd04) Thanks [@bytaesu](https://github.com/bytaesu)! - Generated OpenAPI schema is now valid for endpoints that expose multiple HTTP methods, such as `/get-session`. Previously these endpoints emitted duplicate `operationId`s and shared response object references, producing schemas that some OpenAPI validators and client generators rejected.
+
+- [#9630](https://github.com/better-auth/better-auth/pull/9630) [`f5e29ea`](https://github.com/better-auth/better-auth/commit/f5e29eaf1e57d73a024d12b1bedf4162e5f4a863) Thanks [@bytaesu](https://github.com/bytaesu)! - `deleteOrganization` and `removeMember` now roll back instead of leaving orphan rows when a step fails.
+
+- [#9616](https://github.com/better-auth/better-auth/pull/9616) [`1d372bb`](https://github.com/better-auth/better-auth/commit/1d372bbab9117f5a574ecb608b7a5108f1ccbc66) Thanks [@bytaesu](https://github.com/bytaesu)! - Organization invitations no longer silently route an invitee to the wrong team when `advanced.database.generateId` returns team ids containing a comma. The invitation API now rejects such ids with an `INVALID_TEAM_ID` error.
+
+- [#8817](https://github.com/better-auth/better-auth/pull/8817) [`3f8f310`](https://github.com/better-auth/better-auth/commit/3f8f310a0f2737f65bb4393eefd6b9372b2cb00e) Thanks [@cyphercodes](https://github.com/cyphercodes)! - Preserve the real session expiry when refreshing the stateless session cookie cache.
+
+- [#9639](https://github.com/better-auth/better-auth/pull/9639) [`c01b2f1`](https://github.com/better-auth/better-auth/commit/c01b2f13216463fc0fc0054b5acdb9559d29d825) Thanks [@Paola3stefania](https://github.com/Paola3stefania)! - Fix session cookie leak on 2FA-required sign-in. The credential handler wrote valid `session_token` / `session_data` cookies that the 2FA after-hook only appended expiring overrides to; raw-response readers could capture the valid values and replay them to bypass 2FA when `session.cookieCache.enabled`. `expireCookie` now scrubs prior matching `Set-Cookie` entries (including chunks) before re-setting. `/two-factor/disable` switched to `sensitiveSessionMiddleware` as defense in depth.
+
+- [#9464](https://github.com/better-auth/better-auth/pull/9464) [`6b44606`](https://github.com/better-auth/better-auth/commit/6b44606b7d596527b59176b7a0cd06ea66df9031) Thanks [@ping-maxwell](https://github.com/ping-maxwell)! - fix(username): validate username on admin `createUser` endpoint
+
+- [#9683](https://github.com/better-auth/better-auth/pull/9683) [`04303a9`](https://github.com/better-auth/better-auth/commit/04303a92acd6fd3cf9d5f5ab5901255e67526ad3) Thanks [@yb175](https://github.com/yb175)! - Widen Kysely peer dependency ranges to support both 0.28.x and 0.29.x.
+
+- Updated dependencies [[`85ca603`](https://github.com/better-auth/better-auth/commit/85ca603eecaafa21d4950288b4d58d95c1b5b0b4), [`160d132`](https://github.com/better-auth/better-auth/commit/160d132752b2e540cea8f9c2d2c57307b96867a4), [`5190c26`](https://github.com/better-auth/better-auth/commit/5190c2658f0827b533e7006e95587317ea8cb0cc), [`83fa369`](https://github.com/better-auth/better-auth/commit/83fa3695e7cc0083ff8531f3a2b4101a2e56deff), [`04303a9`](https://github.com/better-auth/better-auth/commit/04303a92acd6fd3cf9d5f5ab5901255e67526ad3), [`7bf5449`](https://github.com/better-auth/better-auth/commit/7bf5449b11866bd82deafee910619660c153d799)]:
+  - @better-auth/drizzle-adapter@1.6.12
+  - @better-auth/kysely-adapter@1.6.12
+  - @better-auth/core@1.6.12
+  - @better-auth/memory-adapter@1.6.12
+  - @better-auth/mongo-adapter@1.6.12
+  - @better-auth/prisma-adapter@1.6.12
+  - @better-auth/telemetry@1.6.12
+
 ## 1.6.11
 
 ### Patch Changes
